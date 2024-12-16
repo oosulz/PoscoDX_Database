@@ -12,12 +12,11 @@ import bookmall.vo.UserVo;
 
 public class UserDao {
 
-	private static Connection getConnection() throws SQLException {
+	protected static Connection getConnection() throws SQLException {
 		Connection conn = null;
 
 		try {
 			Class.forName("org.mariadb.jdbc.Driver");
-			// 2. 연결하기
 			String url = "jdbc:mariadb://192.168.0.15:3306/bookmall";
 			conn = DriverManager.getConnection(url, "bookmall", "bookmall");
 
@@ -41,12 +40,10 @@ public class UserDao {
 		try {
 			conn = getConnection();
 
-			// 3. Statement 준비하기
 			String sql = "insert into user values(null,?, ?, ?, ?)";
 			pstmt = conn.prepareStatement(sql);
 			pstmt2 = conn.prepareStatement("select last_insert_id() from dual");
 
-			// 4. Parameter Binding
 			pstmt.setString(1, vo.getName());
 			pstmt.setString(2, vo.getEmail());
 			pstmt.setString(3, vo.getPassword());
@@ -55,12 +52,10 @@ public class UserDao {
 			result = count == 1;
 
 			rs = pstmt2.executeQuery();
-			
+
 			if (rs.next()) {
 				vo.setNo(rs.getInt(1));
 			}
-			
-
 
 		} catch (SQLException e) {
 			System.out.println("SQL error:" + e);
@@ -92,8 +87,7 @@ public class UserDao {
 
 		try {
 			conn = getConnection();
-			
-			// 3. Statement 준비하기
+
 			String sql = "select no, name, email, password, phone from user order by no desc";
 			pstmt = conn.prepareStatement(sql);
 
@@ -134,7 +128,6 @@ public class UserDao {
 		return result;
 	}
 
-
 	public boolean deleteByNo(int no) {
 
 		Connection conn = null;
@@ -143,13 +136,10 @@ public class UserDao {
 
 		try {
 			conn = getConnection();
-			// 1. JDBC Driver 로딩
 
-			// 3. Statement 준비하기
 			String sql = "delete from user where no = ?";
 			pstmt = conn.prepareStatement(sql);
 
-			// 4. Parameter Binding
 			pstmt.setInt(1, no);
 			int count = pstmt.executeUpdate();
 			result = count == 1;
@@ -158,10 +148,10 @@ public class UserDao {
 			System.out.println("error:" + e);
 		} finally {
 			try {
-				if(pstmt != null) {
+				if (pstmt != null) {
 					pstmt.close();
 				}
-				if(conn != null) {
+				if (conn != null) {
 					conn.close();
 				}
 			} catch (SQLException e) {

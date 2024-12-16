@@ -12,25 +12,6 @@ import bookmall.vo.CartVo;
 
 public class CartDao {
 
-	private static Connection getConnection() throws SQLException {
-		Connection conn = null;
-
-		try {
-			Class.forName("org.mariadb.jdbc.Driver");
-			// 2. 연결하기
-			String url = "jdbc:mariadb://192.168.0.15:3306/bookmall";
-			conn = DriverManager.getConnection(url, "bookmall", "bookmall");
-
-		} catch (ClassNotFoundException e) {
-			System.out.println("드라이버 로딩 실패:" + e);
-		} catch (SQLException e) {
-			System.out.println("SQL error:" + e);
-		}
-
-		return conn;
-
-	}
-
 	public boolean insert(CartVo vo) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
@@ -38,13 +19,12 @@ public class CartDao {
 
 		try {
 			
-			conn = getConnection();
+			conn = UserDao.getConnection();
 		
 			String sql= "insert into cart values(?, ?, ?, ?)";
 			
 			pstmt = conn.prepareStatement(sql);
 
-			// 4. Parameter Binding
 			pstmt.setInt(1, vo.getUserNo());
 			pstmt.setInt(2, vo.getBookNo());
 			pstmt.setInt(3, vo.getQuantity());
@@ -78,9 +58,8 @@ public class CartDao {
 		ResultSet rs = null;
 
 		try {
-			conn = getConnection();
+			conn = UserDao.getConnection();
 
-			// 3. Statement 준비하기
 			String sql = "SELECT c.user_no, c.book_no, c.quantity, c.price, b.title " +
                     "FROM cart c " +
                     "JOIN book b ON c.book_no = b.no " +
@@ -133,14 +112,11 @@ public class CartDao {
 		boolean result = false;
 
 		try {
-			conn = getConnection();
-			// 1. JDBC Driver 로딩
+			conn = UserDao.getConnection();
 
-			// 3. Statement 준비하기
 			String sql = "delete from cart where user_no = ? and book_no = ?";
 			pstmt = conn.prepareStatement(sql);
 
-			// 4. Parameter Binding
 			pstmt.setInt(1, userNo);
 			pstmt.setInt(2, bookNo);
 			int count = pstmt.executeUpdate();

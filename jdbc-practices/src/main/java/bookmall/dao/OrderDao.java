@@ -1,7 +1,6 @@
 package bookmall.dao;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -10,28 +9,8 @@ import java.util.List;
 
 import bookmall.vo.OrderBookVo;
 import bookmall.vo.OrderVo;
-import bookmall.vo.UserVo;
 
 public class OrderDao {
-
-	private static Connection getConnection() throws SQLException {
-		Connection conn = null;
-
-		try {
-			Class.forName("org.mariadb.jdbc.Driver");
-			// 2. 연결하기
-			String url = "jdbc:mariadb://192.168.0.15:3306/bookmall";
-			conn = DriverManager.getConnection(url, "bookmall", "bookmall");
-
-		} catch (ClassNotFoundException e) {
-			System.out.println("드라이버 로딩 실패:" + e);
-		} catch (SQLException e) {
-			System.out.println("SQL error:" + e);
-		}
-
-		return conn;
-
-	}
 
 	public boolean insert(OrderVo vo) {
 		Connection conn = null;
@@ -41,14 +20,12 @@ public class OrderDao {
 		boolean result = false;
 
 		try {
-			conn = getConnection();
+			conn = UserDao.getConnection();
 
-			// 3. Statement 준비하기
 			String sql = "insert into orders values(null, ?, ?, ?, ?, ?)";
 			pstmt = conn.prepareStatement(sql);
 			pstmt2 = conn.prepareStatement("select last_insert_id() from dual");
 
-			// 4. Parameter Binding
 			pstmt.setString(1, vo.getNumber());
 			pstmt.setInt(2, vo.getPayment());
 			pstmt.setString(3, vo.getShipping());
@@ -84,20 +61,18 @@ public class OrderDao {
 		}
 		return result;
 	}
-	
+
 	public boolean insertBook(OrderBookVo vo) {
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		boolean result = false;
 
 		try {
-			conn = getConnection();
+			conn = UserDao.getConnection();
 
-			// 3. Statement 준비하기
 			String sql = "insert into orders_book values(?, ?, ?, ?)";
 			pstmt = conn.prepareStatement(sql);
 
-			// 4. Parameter Binding
 			pstmt.setLong(1, vo.getOrderNo());
 			pstmt.setInt(2, vo.getBookNo());
 			pstmt.setInt(3, vo.getQuantity());
@@ -132,9 +107,8 @@ public class OrderDao {
 		ResultSet rs = null;
 
 		try {
-			conn = getConnection();
+			conn = UserDao.getConnection();
 
-			// 3. Statement 준비하기
 			String sql = "select no, number, payment, shipping, status, user_no from orders where no = ? and user_no = ?";
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setLong(1, no);
@@ -177,39 +151,35 @@ public class OrderDao {
 		}
 		return vo;
 	}
-	
+
 	public List<OrderBookVo> findBooksByNoAndUserNo(Long orderNo, int userNo) {
-		
+
 		List<OrderBookVo> result = new ArrayList<OrderBookVo>();
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 
 		try {
-			conn = getConnection();
+			conn = UserDao.getConnection();
 
-			// 3. Statement 준비하기
-			String sql = "SELECT b.orders_no, b.book_no, b.quantity, b.price, bk.title "
-					+ "FROM orders_book b "
-					+ "JOIN orders o ON o.no = b.orders_no "
-					+ "JOIN user u ON u.no = o.user_no "
-					+ "JOIN book bk ON bk.no = b.book_no "
-					+ "WHERE o.no = ? AND u.no = ?";
-			
+			String sql = "SELECT b.orders_no, b.book_no, b.quantity, b.price, bk.title " + "FROM orders_book b "
+					+ "JOIN orders o ON o.no = b.orders_no " + "JOIN user u ON u.no = o.user_no "
+					+ "JOIN book bk ON bk.no = b.book_no " + "WHERE o.no = ? AND u.no = ?";
+
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setLong(1, orderNo);
 			pstmt.setInt(2, userNo);
 
 			rs = pstmt.executeQuery();
 
-			while(rs.next()) {
+			while (rs.next()) {
 
 				Long orderno = rs.getLong(1);
 				int bookno = rs.getInt(2);
 				int quantity = rs.getInt(3);
 				int price = rs.getInt(4);
 				String bookTitle = rs.getString(5);
-				
+
 				OrderBookVo vo = new OrderBookVo();
 
 				vo.setOrderNo(orderno);
@@ -217,7 +187,7 @@ public class OrderDao {
 				vo.setQuantity(quantity);
 				vo.setPrice(price);
 				vo.setBookTitle(bookTitle);
-			
+
 				result.add(vo);
 			}
 
@@ -246,14 +216,11 @@ public class OrderDao {
 		boolean result = false;
 
 		try {
-			conn = getConnection();
-			// 1. JDBC Driver 로딩
+			conn = UserDao.getConnection();
 
-			// 3. Statement 준비하기
 			String sql = "delete from orders where no = ?";
 			pstmt = conn.prepareStatement(sql);
 
-			// 4. Parameter Binding
 			pstmt.setLong(1, no);
 			int count = pstmt.executeUpdate();
 			result = count == 1;
@@ -274,7 +241,7 @@ public class OrderDao {
 		}
 		return result;
 	}
-	
+
 	public boolean deleteBooksByNo(Long bookNo) {
 
 		Connection conn = null;
@@ -282,14 +249,11 @@ public class OrderDao {
 		boolean result = false;
 
 		try {
-			conn = getConnection();
-			// 1. JDBC Driver 로딩
+			conn = UserDao.getConnection();
 
-			// 3. Statement 준비하기
 			String sql = "delete from orders_book where book_no = ?";
 			pstmt = conn.prepareStatement(sql);
 
-			// 4. Parameter Binding
 			pstmt.setLong(1, bookNo);
 			int count = pstmt.executeUpdate();
 			result = count == 1;
